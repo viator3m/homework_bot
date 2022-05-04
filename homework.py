@@ -15,7 +15,7 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 formatter = logging.Formatter(
-    '%(asctime)s - %(name)s - [%(levelname)s] - %(message)s'
+    '%(asctime)s - %(funcName)s - [%(levelname)s] - %(message)s'
 )
 handler = logging.StreamHandler()
 handler.setFormatter(formatter)
@@ -43,13 +43,13 @@ def send_message(bot, message) -> None:
     Отправляет сообщение в Телеграмм.
     В случае неудачи, вызывает ошибку. Логирует события.
     """
-
+    failed_message = 'Не удалось отправить сообщение'
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
         logger.info(f'Бот отправил сообщение {message}')
     except telegram.error.TelegramError:
-        logger.error('Не удалось отправить сообщение')
-        raise telegram.error.TelegramError('Ошибка при отправке сообщения')
+        logger.error(failed_message)
+        raise telegram.error.TelegramError(failed_message)
 
 
 def get_api_answer(current_timestamp: int) -> dict:
@@ -70,8 +70,9 @@ def get_api_answer(current_timestamp: int) -> dict:
             raise response.raise_for_status()
 
     except requests.exceptions.RequestException as error:
-        logger.error(f'Эндпойнт недоступен: {error}')
-        raise requests.exceptions.RequestException('Эндпойнт недоступен')
+        message = f'Эндпойнт недоступен: {error}'
+        logger.error(message)
+        raise requests.exceptions.RequestException(message)
     return response.json()
 
 
@@ -133,7 +134,7 @@ def main() -> None:
 
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
-            ...
+            send_message(bot, message)
             time.sleep(RETRY_TIME)
         else:
             ...
