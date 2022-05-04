@@ -1,0 +1,2 @@
+class MissingVariable(Exception):
+    pass
