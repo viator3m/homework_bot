@@ -77,13 +77,23 @@ def get_api_answer(current_timestamp: int) -> dict:
 
 
 def check_response(response: dict) -> list:
+    """
+    Проверка корректности ответа API. В качестве параметра получает ответ
+    API приведенный к типам данных Python (dict). Функция возвращает список
+    домашних работ по ключу 'homeworks'
+    """
+
     if isinstance(response, dict):
-        homework = response['homeworks'][0]
+        try:
+            homework = response['homeworks']
+        except KeyError as error:
+            message = f'В ответе не обнаружен ключ {error}'
+            logger.error(message)
+            raise exception.MissingHomeworks(message)
         logger.info('Получены сведения о последней домашней работе')
         return homework
     else:
-        raise TypeError('Ошибка при проверке ответа API')
-
+        raise TypeError('В ответе API не обнаружен словарь')
 
 
 def parse_status(homework):
