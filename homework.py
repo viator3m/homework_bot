@@ -58,7 +58,6 @@ def get_api_answer(current_timestamp: int) -> dict:
     Возвращает ответ API преобразованный в тип данных Python.
     Принимает в качестве параметра временную метку.
     """
-
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
 
@@ -78,11 +77,11 @@ def get_api_answer(current_timestamp: int) -> dict:
 
 def check_response(response: dict) -> list:
     """
-    Проверка корректности ответа API. В качестве параметра получает ответ
+    Проверка корректности ответа API.
+    В качестве параметра получает ответ
     API приведенный к типам данных Python (dict). Функция возвращает список
     домашних работ по ключу 'homeworks'.
     """
-
     if isinstance(response, dict):
         try:
             homework = response['homeworks']
@@ -104,7 +103,6 @@ def parse_status(homework: dict) -> str:
     Извлекает из информации о домашней работе статус работы.
     Возвращает строку для отправки сообщения в Телеграмм.
     """
-
     try:
         homework_name = homework['homework_name']
         homework_status = homework['status']
@@ -126,17 +124,16 @@ def parse_status(homework: dict) -> str:
 
 def check_tokens() -> bool:
     """
-    Проверяет доступность переменных окружения: токенов Практикума и
+    Проверяет доступность переменных окружения.
+    Проверка токенов Практикума и
     Bot API, id чата получателя. Возвращает булево значение.
     """
-
     checker = all((PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID))
     return checker
 
 
 def main() -> None:
     """Основная логика работы бота."""
-
     logger.info('Бот запущен')
     if not check_tokens():
         message = 'Отсутствует одна из переменных окружения'
