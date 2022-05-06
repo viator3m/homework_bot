@@ -2,5 +2,9 @@ class MissingVariable(Exception):
     pass
 
 
-class MissingHomeworks(Exception):
+class KeyNotFound(Exception):
+    pass
+
+
+class UnknownStatus(Exception):
     pass

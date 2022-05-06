@@ -80,7 +80,7 @@ def check_response(response: dict) -> list:
     """
     Проверка корректности ответа API. В качестве параметра получает ответ
     API приведенный к типам данных Python (dict). Функция возвращает список
-    домашних работ по ключу 'homeworks'
+    домашних работ по ключу 'homeworks'.
     """
 
     if isinstance(response, dict):
@@ -89,22 +89,37 @@ def check_response(response: dict) -> list:
         except KeyError as error:
             message = f'В ответе не обнаружен ключ {error}'
             logger.error(message)
-            raise exception.MissingHomeworks(message)
-        logger.info('Получены сведения о последней домашней работе')
+            raise exception.KeyNotFound(message)
+        if not isinstance(homework, list):
+            raise TypeError('Ответ не содержит список домашних работ')
+        message = 'Получены сведения о последней домашней работе'
+        logger.info(message) if len(homework) else None
         return homework
     else:
         raise TypeError('В ответе API не обнаружен словарь')
 
 
-def parse_status(homework):
-    homework_name = ...
-    homework_status = ...
+def parse_status(homework: dict) -> str:
+    """
+    Извлекает из информации о домашней работе статус работы.
+    Возвращает строку для отправки сообщения в Телеграмм.
+    """
 
-    ...
+    try:
+        homework_name = homework['homework_name']
+        homework_status = homework['status']
+    except KeyError as error:
+        message = f'Ключ {error} не найден в информации о домашней работе'
+        logger.error(message)
+        raise KeyError(message)
 
-    verdict = ...
-
-    ...
+    try:
+        verdict = HOMEWORK_STATUSES[homework_status]
+        logger.info('Сообщение подготовлено для отправки')
+    except KeyError as error:
+        message = f'Неизвестный статус домашней работы: {error}'
+        logger.error(message)
+        raise exception.UnknownStatus(message)
 
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
@@ -128,26 +143,40 @@ def main() -> None:
         logger.critical(message + '\nПрограмма остановлена.')
         raise exception.MissingVariable(message)
 
-    bot = telegram.Bot(token=TELEGRAM_TOKEN)
+    try:
+        bot = telegram.Bot(token=TELEGRAM_TOKEN)
+    except telegram.error.InvalidToken as error:
+        message = f'Ошибка при создании бота: {error}'
+        logger.critical(message)
+        raise telegram.error.InvalidToken
+
     current_timestamp = int(time.time())
-    ...
+    last_homework = None
+    last_error = None
 
     while True:
         try:
-            response = get_api_answer(170_000_000)
+            response = get_api_answer(current_timestamp - RETRY_TIME)
             homework = check_response(response)
-
-            ...
-
-            current_timestamp = ...
+            if homework != last_homework:
+                try:
+                    message = parse_status(homework[0])
+                    send_message(bot, message)
+                    last_homework = homework
+                except IndexError:
+                    pass
+            else:
+                logger.debug('Статус домашней работы не изменился')
+            current_timestamp = response.get('current_date')
             time.sleep(RETRY_TIME)
 
         except Exception as error:
-            message = f'Сбой в работе программы: {error}'
-            send_message(bot, message)
-            time.sleep(RETRY_TIME)
-        else:
-            ...
+            if error != last_error:
+                message = f'Сбой в работе программы: {error}'
+                send_message(bot, message)
+                last_error = error
+            else:
+                time.sleep(RETRY_TIME)
 
 
 if __name__ == '__main__':
