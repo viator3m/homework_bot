@@ -147,7 +147,7 @@ def main() -> None:
         bot = telegram.Bot(token=TELEGRAM_TOKEN)
     except telegram.error.InvalidToken as error:
         message = f'Ошибка при создании бота: {error}'
-        logger.critical(message)
+        logger.critical(message + '\nПрограмма остановлена.')
         raise telegram.error.InvalidToken
 
     current_timestamp = int(time.time())
