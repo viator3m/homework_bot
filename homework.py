@@ -155,13 +155,10 @@ def main() -> None:
         try:
             response = get_api_answer(current_timestamp - RETRY_TIME)
             homework = check_response(response)
-            if homework != last_homework:
-                try:
-                    message = parse_status(homework[0])
-                    send_message(bot, message)
-                    last_homework = homework
-                except IndexError:
-                    pass
+            if homework and homework != last_homework:
+                message = parse_status(homework[0])
+                send_message(bot, message)
+                last_homework = homework
             else:
                 logger.debug('Статус домашней работы не изменился')
             current_timestamp = response.get('current_date')
