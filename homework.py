@@ -135,6 +135,7 @@ def check_tokens() -> bool:
 def main() -> None:
     """Основная логика работы бота."""
     logger.info('Бот запущен')
+
     if not check_tokens():
         message = 'Отсутствует одна из переменных окружения'
         logger.critical(message + '\nПрограмма остановлена.')
