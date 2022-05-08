@@ -7,6 +7,7 @@ from http import HTTPStatus
 import requests
 import telegram
 from dotenv import load_dotenv
+from telegram.ext import Updater, CommandHandler
 
 import exception
 
@@ -132,9 +133,25 @@ def check_tokens() -> bool:
     return checker
 
 
+def wake_up(update, context):
+    chat = update.effective_chat
+    name = update.effective_chat.first_name
+
+    context.bot.send_message(
+        chat_id=chat.id,
+        text=f'Привет, {name}! '
+             f'Я буду сообщать о статусе твоей домашней работы.',
+    )
+
+
 def main() -> None:
     """Основная логика работы бота."""
     logger.info('Бот запущен')
+
+    updater = Updater(token=TELEGRAM_TOKEN)
+    updater.dispatcher.add_handler(CommandHandler('start', wake_up))
+    updater.start_polling()
+    updater.idle()
 
     if not check_tokens():
         message = 'Отсутствует одна из переменных окружения'
