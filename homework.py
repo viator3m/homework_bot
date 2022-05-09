@@ -166,10 +166,11 @@ def main() -> None:
             time.sleep(RETRY_TIME)
 
         except Exception as error:
-            if error != last_error:
+            if str(error) != last_error:
                 message = f'Сбой в работе программы: {error}'
                 send_message(bot, message)
-                last_error = error
+                last_error = str(error)
+                time.sleep(120)
             else:
                 time.sleep(RETRY_TIME)
 
